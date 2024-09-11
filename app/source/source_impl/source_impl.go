@@ -85,15 +85,6 @@ func itemExists(a []string, list []string) bool {
 	return false
 }
 
-func trimCommonKeys(a string, list []string) bool {
-	for _, b := range list {
-		if strings.ToLower(b) == a {
-			return true
-		}
-	}
-	return false
-}
-
 func Trim_Item(ObjectMeta *metav1.ObjectMeta) {
 	Trim_Item_All(ObjectMeta, true)
 }
