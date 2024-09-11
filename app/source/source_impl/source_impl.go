@@ -324,6 +324,12 @@ func Generate_cronjob_config(src *cluster.Cluster, resource *resource.Resources)
 		for _, element := range resource.Nsl.Items {
 			cronjob, err := src.GetClientset().BatchV1beta1().CronJobs(element.ObjectMeta.Name).List(context.TODO(), metav1.ListOptions{})
 			if err != nil {
+				if statusErr, isStatusErr := err.(*errors.StatusError); isStatusErr {
+					if statusErr.ErrStatus.Code == 404 {
+						fmt.Printf("Error, couldn't find any pod security policies")
+						return
+					}
+				}
 				fmt.Printf("Could not read kubernetes Secrets using cluster client: %v\n", err)
 				os.Exit(1)
 			}
