@@ -326,11 +326,11 @@ func Generate_cronjob_config(src *cluster.Cluster, resource *resource.Resources)
 			if err != nil {
 				if statusErr, isStatusErr := err.(*errors.StatusError); isStatusErr {
 					if statusErr.ErrStatus.Code == 404 {
-						fmt.Printf("Error, couldn't find any pod security policies")
+						fmt.Printf("Error, couldn't find any cron jobs")
 						return
 					}
 				}
-				fmt.Printf("Could not read kubernetes Secrets using cluster client: %v\n", err)
+				fmt.Printf("Could not read kubernetes cron jobs using cluster client: %v\n", err)
 				os.Exit(1)
 			}
 
