@@ -16,24 +16,14 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 package AWS
 
 import (
+	cluster "containers-migration-factory/app/cluster"
+	resource "containers-migration-factory/app/resource"
 	"context"
 	"fmt"
-	"github.com/gofrs/flock"
-	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
-	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/cli"
-	"helm.sh/helm/v3/pkg/cli/values"
-	"helm.sh/helm/v3/pkg/downloader"
-	"helm.sh/helm/v3/pkg/getter"
-	"helm.sh/helm/v3/pkg/repo"
 	"io/ioutil"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"log"
 	"os"
 	"os/exec"
@@ -41,12 +31,21 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"helm.sh/helm/v3/pkg/chart/loader"
-	"helm.sh/helm/v3/pkg/strvals"
-	cluster "containers-migration-factory/app/cluster"
-	resource "containers-migration-factory/app/resource"
-)
 
+	"github.com/gofrs/flock"
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/cli/values"
+	"helm.sh/helm/v3/pkg/downloader"
+	"helm.sh/helm/v3/pkg/getter"
+	"helm.sh/helm/v3/pkg/repo"
+	"helm.sh/helm/v3/pkg/strvals"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 type Config struct {
 	CurrentContext string `yaml:"current-context"`
@@ -66,6 +65,7 @@ func stringInSlice(a string, list []string) bool {
 
 func Deploy_resource_eks(dst *cluster.Cluster, src_resources *resource.Resources) {
 
+	fmt.Println("Deploying resources to eks cluster")
 	// Create non-namespaces resources
 	if stringInSlice("mutatingWebhookconfigurations", dst.Resources) || stringInSlice("mutatingwebhookconfiguration", dst.Resources) || stringInSlice("all", dst.Resources) {
 		// Create list of MutatingWebhookCOnfiguration in destination cluster
@@ -102,7 +102,7 @@ func Deploy_resource_eks(dst *cluster.Cluster, src_resources *resource.Resources
 		}
 	}
 
-	// Install/Upgrade helm charts 
+	// Install/Upgrade helm charts
 	Deploy_helm_charts(dst, src_resources)
 
 	// Loop through each namespace and create resources inside each namespace
@@ -313,8 +313,8 @@ func Deploy_resource_eks(dst *cluster.Cluster, src_resources *resource.Resources
 		if stringInSlice("cronjobs", dst.Resources) || stringInSlice("cronjob", dst.Resources) || stringInSlice("cj", dst.Resources) || stringInSlice("all", dst.Resources) {
 			fmt.Println("===============")
 			fmt.Println("Creating CronJob's")
-			for _, cronjob := range src_resources.CronJobList {		
-				cronjob := cronjob		
+			for _, cronjob := range src_resources.CronJobList {
+				cronjob := cronjob
 				if cronjob.ObjectMeta.Namespace == element.ObjectMeta.Name {
 					fmt.Println("Creating CronJob: ", cronjob.ObjectMeta.Name)
 					_, err := dst.Clientset.BatchV1beta1().CronJobs(element.ObjectMeta.Name).Create(context.TODO(), &cronjob, metav1.CreateOptions{})
@@ -329,8 +329,8 @@ func Deploy_resource_eks(dst *cluster.Cluster, src_resources *resource.Resources
 		if stringInSlice("job", dst.Resources) || stringInSlice("jobs", dst.Resources) || stringInSlice("all", dst.Resources) {
 			fmt.Println("===============")
 			fmt.Println("Creating Job's")
-			for _, job := range src_resources.JobList {			
-				job := job	
+			for _, job := range src_resources.JobList {
+				job := job
 				if job.ObjectMeta.Namespace == element.ObjectMeta.Name {
 					fmt.Println("Creating Job's: ", job.ObjectMeta.Name)
 					_, err := dst.Clientset.BatchV1().Jobs(element.ObjectMeta.Name).Create(context.TODO(), &job, metav1.CreateOptions{})
@@ -346,7 +346,7 @@ func Deploy_resource_eks(dst *cluster.Cluster, src_resources *resource.Resources
 			fmt.Println("===============")
 			fmt.Println("Creating Cluster Roles")
 			for _, crl := range src_resources.ClusterRoleList {
-				crl := crl			
+				crl := crl
 				if crl.ObjectMeta.Namespace == element.ObjectMeta.Name {
 					fmt.Println("Creating Role Bindings: ", crl.ObjectMeta.Name)
 					_, err := dst.Clientset.RbacV1().ClusterRoles().Create(context.TODO(), &crl, metav1.CreateOptions{})
@@ -426,8 +426,9 @@ func Deploy_resource_eks(dst *cluster.Cluster, src_resources *resource.Resources
 func Delete_resource_eks(dst *cluster.Cluster, src_resources *resource.Resources) {
 
 	// Loop through each namespace and create resources inside each namespace
+	fmt.Println("Deleting existing records in target EKS cluster")
 	for _, element := range src_resources.Nsl.Items {
-        element := element
+		element := element
 		fmt.Println("=====================================================================")
 		fmt.Println("Operating on namespace: ", element.ObjectMeta.Name)
 		fmt.Println("=====================================================================")
@@ -471,7 +472,7 @@ func Delete_resource_eks(dst *cluster.Cluster, src_resources *resource.Resources
 		// Delete DaemonSets resource
 		fmt.Println("Deleting DaemonSets")
 		for _, ds := range src_resources.Dsl {
-		    ds := ds
+			ds := ds
 			if ds.ObjectMeta.Namespace == element.ObjectMeta.Name {
 				fmt.Println("Deleting DaemonSet: ", ds.ObjectMeta.Name)
 				err := dst.Clientset.AppsV1().DaemonSets(element.ObjectMeta.Name).Delete(context.TODO(), ds.ObjectMeta.Name, metav1.DeleteOptions{})
@@ -667,10 +668,10 @@ func Deploy_helm_charts(dst *cluster.Cluster, src_resources *resource.Resources)
 				fmt.Println("test2")
 				log.Fatal(err)
 			}
-			
+
 			fmt.Printf(" %s\n", out)
 			//install charts
-			cmd = exec.Command("helm", "upgrade", "--install", key, "." , "-n", namespace)
+			cmd = exec.Command("helm", "upgrade", "--install", key, ".", "-n", namespace)
 			cmd.Dir = value
 			out, err = cmd.Output()
 			if err != nil {
