@@ -16,7 +16,6 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 package source_impl
 
 import (
@@ -34,16 +33,18 @@ import (
 	"log"
 	"path/filepath"
 
+	"k8s.io/apimachinery/pkg/api/errors"
+
 	yaml "github.com/ghodss/yaml"
 	helm "helm.sh/helm/v3/pkg/release"
 	app "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
+	networking "k8s.io/api/networking/v1"
 	podsecuritypolicy "k8s.io/api/policy/v1beta1"
 	rbac "k8s.io/api/rbac/v1"
 	storage "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-    networking "k8s.io/api/networking/v1"
 
 	admissionregistration "k8s.io/api/admissionregistration/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -235,7 +236,7 @@ func Resource_trim_fields(resource_type string, resource *resource.Resources, re
 		var resource_list []batchv1.Job
 		for _, item := range resource.JobList {
 			Trim_Item(&item.ObjectMeta)
-			delete(item.Spec.Selector.MatchLabels,"controller-uid")
+			delete(item.Spec.Selector.MatchLabels, "controller-uid")
 			delete(item.Spec.Template.Labels, "controller-uid")
 			resource_list = append(resource_list, item)
 		}
@@ -308,6 +309,7 @@ func Resource_trim_fields(resource_type string, resource *resource.Resources, re
 
 // Scan source kubernetes cluster and generate the Job objects
 func Generate_job_config(src *cluster.Cluster, resource *resource.Resources) {
+	fmt.Println("Attempting to generate Job config")
 	if stringInSlice("jobs", src.GetResources()) || stringInSlice("job", src.GetResources()) || stringInSlice("all", src.GetResources()) {
 		// Loop through all the namespaces and get the list of services
 		for _, element := range resource.Nsl.Items {
@@ -325,6 +327,7 @@ func Generate_job_config(src *cluster.Cluster, resource *resource.Resources) {
 
 // Scan source kubernetes cluster and generate the CronJob objects
 func Generate_cronjob_config(src *cluster.Cluster, resource *resource.Resources) {
+	fmt.Println("Attempting to generate cronjob config")
 	if stringInSlice("cronjobs", src.GetResources()) || stringInSlice("cronjob", src.GetResources()) || stringInSlice("cj", src.GetResources()) || stringInSlice("all", src.GetResources()) {
 		// Loop through all the namespaces and get the list of services
 		for _, element := range resource.Nsl.Items {
@@ -334,16 +337,16 @@ func Generate_cronjob_config(src *cluster.Cluster, resource *resource.Resources)
 				os.Exit(1)
 			}
 
-            if src.Migrate_Images == "Yes" || src.Migrate_Images == "yes" {
-                    for i, item := range cronjob.Items {
-                            for j, image_spec := range item.Spec.JobTemplate.Spec.Template.Spec.Containers {
-                                    image_name := image_spec.Image
-                                    updated_image := MIGRATE_IMAGES.Validate(image_name, src.Registry_Names)
-                                    if updated_image != "" {
-                                            cronjob.Items[i].Spec.JobTemplate.Spec.Template.Spec.Containers[j].Image = updated_image
-                                    }
-                            }
-                	}
+			if src.Migrate_Images == "Yes" || src.Migrate_Images == "yes" {
+				for i, item := range cronjob.Items {
+					for j, image_spec := range item.Spec.JobTemplate.Spec.Template.Spec.Containers {
+						image_name := image_spec.Image
+						updated_image := MIGRATE_IMAGES.Validate(image_name, src.Registry_Names)
+						if updated_image != "" {
+							cronjob.Items[i].Spec.JobTemplate.Spec.Template.Spec.Containers[j].Image = updated_image
+						}
+					}
+				}
 			}
 
 			// append list of services in this namespace to glabal services list
@@ -354,6 +357,7 @@ func Generate_cronjob_config(src *cluster.Cluster, resource *resource.Resources)
 
 // Scan source kubernetes cluster and generate the secret objects
 func Generate_secret_config(src *cluster.Cluster, resource *resource.Resources) {
+	fmt.Println("Trying to read secrets")
 	if stringInSlice("secrets", src.GetResources()) || stringInSlice("secret", src.GetResources()) || stringInSlice("all", src.GetResources()) {
 		// Loop through all the namespaces and get the list of services
 		for _, element := range resource.Nsl.Items {
@@ -361,6 +365,10 @@ func Generate_secret_config(src *cluster.Cluster, resource *resource.Resources) 
 			if err != nil {
 				fmt.Printf("Could not read kubernetes Secrets using cluster client: %v\n", err)
 				os.Exit(1)
+			}
+			if len(secret.Items) < 1 {
+				fmt.Println("No secrets found")
+				return
 			}
 
 			// Remove default secret from each namespace
@@ -485,18 +493,18 @@ func Generate_deployment_config(src *cluster.Cluster, resource *resource.Resourc
 				fmt.Printf("Could not read kubernetes SVC using cluster client: %v\n", err)
 				os.Exit(1)
 			}
-            
+
 			if src.Migrate_Images == "Yes" || src.Migrate_Images == "yes" {
-                    for i, item := range dep.Items {
-                            for j, image_spec := range item.Spec.Template.Spec.Containers {
-                                    image_name := image_spec.Image
-                                    updated_image := MIGRATE_IMAGES.Validate(image_name, src.Registry_Names)
-                                    if updated_image != "" {
-                                            dep.Items[i].Spec.Template.Spec.Containers[j].Image = updated_image
-                                    }
-                            }
-                	}
-            }
+				for i, item := range dep.Items {
+					for j, image_spec := range item.Spec.Template.Spec.Containers {
+						image_name := image_spec.Image
+						updated_image := MIGRATE_IMAGES.Validate(image_name, src.Registry_Names)
+						if updated_image != "" {
+							dep.Items[i].Spec.Template.Spec.Containers[j].Image = updated_image
+						}
+					}
+				}
+			}
 
 			// append list of services in this namespace to global services list
 			resource.Depl = append(resource.Depl, dep.Items...)
@@ -557,12 +565,22 @@ func Generate_hpa_config(src *cluster.Cluster, resource *resource.Resources) {
 }
 
 func Generate_psp_config(src *cluster.Cluster, resource *resource.Resources) {
+	fmt.Println("Generating pod security policies")
 	if stringInSlice("podsecuritypolicies", src.GetResources()) || stringInSlice("podsecuritypolicy", src.GetResources()) || stringInSlice("psp", src.GetResources()) || stringInSlice("all", src.GetResources()) {
 		// Get the list of pod security policies
 		psp, err := src.GetClientset().PolicyV1beta1().PodSecurityPolicies().List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
+			if statusErr, isStatusErr := err.(*errors.StatusError); isStatusErr {
+				if statusErr.ErrStatus.Code == 404 {
+					fmt.Printf("Error, couldn't find any pod security policies")
+					return
+				}
+			}
 			fmt.Printf("Could not read kubernetes pod security policies using cluster client: %v\n", err)
 			os.Exit(1)
+		}
+		if len(psp.Items) < 1 {
+			fmt.Printf("Didn't find any pod security policies")
 		}
 
 		// append list of pod security policies to glabal services list
@@ -670,6 +688,7 @@ func Generate_namespace_list(src *cluster.Cluster, resource *resource.Resources)
 			}
 
 			resource.Nsl.Items = append(resource.Nsl.Items, *ns)
+			fmt.Println("Found", len(resource.Nsl.Items), "items")
 		}
 	} else {
 		fmt.Println("Namespace list entered as 'all' by user, hence all namespaces will be considered")
@@ -691,14 +710,16 @@ func Generate_namespace_list(src *cluster.Cluster, resource *resource.Resources)
 
 }
 
-//Scan source kubernetes cluster and generate the Helm charts
+// Scan source kubernetes cluster and generate the Helm charts
 func Generate_helm_charts(src *cluster.Cluster, resource *resource.Resources) {
-	labelSelector := fmt.Sprintf("owner=helm")
+	labelSelector := "owner=helm"
 	listOptions := metav1.ListOptions{
 		LabelSelector: labelSelector,
 	}
 
 	resource.HelmList = make(map[string]map[string]string)
+
+	fmt.Println("Generating Helm chart")
 	for _, element := range resource.Nsl.Items {
 		var helmCharts = make(map[string]helm.Release)
 
