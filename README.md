@@ -128,7 +128,7 @@ ACTION=Delete
 NAMESPACES=all
 
 [SOURCE]
-# Source Cloud Provider valid values are GKE,AKE,KOPS
+# Source Cloud Provider valid values are GKE,AKS,KOPS
 CLOUD=GKE
 # Source kube config file
 # Refer the documentation for the respective source cluster provider to create the kubeconfig file. For GKE, you may refer https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl
@@ -176,7 +176,7 @@ you can also provide comma separated values of namespaces, for example if the na
 
 ### **SOURCE Section** 
 ***CLOUD*** (Required): Cloud provider for the source Kubernetes cluster
-Valid values: any one of GKE, AKE, KOPS
+Valid values: any one of GKE, AKS, KOPS
 
 ***KUBE_CONFIG*** (Required): Kubeconfig file path on the local machine for the destination cluster
 
