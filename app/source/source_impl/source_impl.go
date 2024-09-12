@@ -41,7 +41,9 @@ import (
 	autoscaling "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
-	podsecuritypolicy "k8s.io/api/policy/v1beta1"
+
+	// Pod security policies were deprecated in v1.25
+	// podsecuritypolicy "k8s.io/api/policy/v1beta1"
 	rbac "k8s.io/api/rbac/v1"
 	storage "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -561,29 +563,29 @@ func Generate_hpa_config(src *cluster.Cluster, resource *resource.Resources) {
 	}
 }
 
-func Generate_psp_config(src *cluster.Cluster, resource *resource.Resources) {
-	fmt.Println("Generating pod security policies")
-	if stringInSlice("podsecuritypolicies", src.GetResources()) || stringInSlice("podsecuritypolicy", src.GetResources()) || stringInSlice("psp", src.GetResources()) || stringInSlice("all", src.GetResources()) {
-		// Get the list of pod security policies
-		psp, err := src.GetClientset().PolicyV1beta1().PodSecurityPolicies().List(context.TODO(), metav1.ListOptions{})
-		if err != nil {
-			if statusErr, isStatusErr := err.(*errors.StatusError); isStatusErr {
-				if statusErr.ErrStatus.Code == 404 {
-					fmt.Printf("Error, couldn't find any pod security policies")
-					return
-				}
-			}
-			fmt.Printf("Could not read kubernetes pod security policies using cluster client: %v\n", err)
-			os.Exit(1)
-		}
-		if len(psp.Items) < 1 {
-			fmt.Printf("Didn't find any pod security policies")
-		}
+// func Generate_psp_config(src *cluster.Cluster, resource *resource.Resources) {
+// 	fmt.Println("Generating pod security policies")
+// 	if stringInSlice("podsecuritypolicies", src.GetResources()) || stringInSlice("podsecuritypolicy", src.GetResources()) || stringInSlice("psp", src.GetResources()) || stringInSlice("all", src.GetResources()) {
+// 		// Get the list of pod security policies
+// 		psp, err := src.GetClientset().PolicyV1beta1().PodSecurityPolicies().List(context.TODO(), metav1.ListOptions{})
+// 		if err != nil {
+// 			if statusErr, isStatusErr := err.(*errors.StatusError); isStatusErr {
+// 				if statusErr.ErrStatus.Code == 404 {
+// 					fmt.Printf("Error, couldn't find any pod security policies")
+// 					return
+// 				}
+// 			}
+// 			fmt.Printf("Could not read kubernetes pod security policies using cluster client: %v\n", err)
+// 			os.Exit(1)
+// 		}
+// 		if len(psp.Items) < 1 {
+// 			fmt.Printf("Didn't find any pod security policies")
+// 		}
 
-		// append list of pod security policies to glabal services list
-		// resource.PspList = append(resource.PspList, psp.Items...)
-	}
-}
+// 		// append list of pod security policies to glabal services list
+// 		// resource.PspList = append(resource.PspList, psp.Items...)
+// 	}
+// }
 
 func Generate_serviceaccount_config(src *cluster.Cluster, resource *resource.Resources) {
 	if stringInSlice("serviceaccount", src.GetResources()) || stringInSlice("serviceaccounts", src.GetResources()) || stringInSlice("sa", src.GetResources()) || stringInSlice("all", src.GetResources()) {

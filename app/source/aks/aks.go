@@ -56,7 +56,8 @@ func (g AKS) GetSourceDetails(sCluster *cluster.Cluster) resource.Resources {
 	source_impl.Generate_service_config(sCluster, &resources)
 	source_impl.Generate_daemonset_config(sCluster, &resources)
 	source_impl.Generate_hpa_config(sCluster, &resources)
-	source_impl.Generate_psp_config(sCluster, &resources)
+	// Pod security policies were deprecated in v1.25
+	// source_impl.Generate_psp_config(sCluster, &resources)
 	source_impl.Generate_serviceaccount_config(sCluster, &resources)
 	source_impl.Generate_role_config(sCluster, &resources)
 	source_impl.Generate_role_binding_config(sCluster, &resources)
