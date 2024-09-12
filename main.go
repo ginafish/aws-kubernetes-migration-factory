@@ -323,7 +323,7 @@ func main() {
 		sourceResources = source.Invoke(k, sourceType, &sourceCluster, &destCluster )
 		// fmt.Println(sourceResources)
 	} else{
-		fmt.Println("Invalid input for parameter \"sourceType\", accepted values are GKE,AKE,KOPS")
+		fmt.Println("Invalid input for parameter \"sourceType\", accepted values are GKE,AKS,KOPS")
 		os.Exit(1)
 	}
 	target.Invoke(t,sourceType, &sourceCluster, &destCluster,&sourceResources, action)

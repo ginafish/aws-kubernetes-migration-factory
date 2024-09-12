@@ -16,7 +16,7 @@ Kubernetes Migration Factory (KMF) tool can be used to migrate Kubernetes resour
 * On the workstation where the KMF CLI will be used,  setup the kubeconfig for the destination cluster. For more information on authenticating and accessing an Amazon EKS cluster, please refer to [Cluster Authentication](https://docs.aws.amazon.com/eks/latest/userguide/managing-auth.html) documentation
 * Setup kubeconfig file to access the EKS Cluster using the kubectl tool and the same setup is sufficient for KMF to get access. Please refer [setting kubeconfig file for EKS cluster access](https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html) documentation
 * Similarly setup the kubeconfig file for the source Kubernetes cluster. For Google Kubernetes Engine(GKE), you may refer [cluster access to GKE](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl) just like how you setup access for kubectl tool
-* Download `KMF` for your platform from here [TO COME]. If your platform is not among the available releases, you can install GoLang and setup the workspace. Please refer [Download and Install](https://golang.org/doc/install) for more information about installing golang to your workstation
+* Download `KMF` for your platform from [here](https://github.com/awslabs/aws-kubernetes-migration-factory/releases). If your platform is not among the available releases, you can install GoLang and setup the workspace. Please refer [Download and Install](https://golang.org/doc/install) for more information about installing golang to your workstation
 * Amazon EKS Cluster used as destination for migrating the Kubernetes workload should have access to the docker registry used in the source. You may follow the documentation [Pull an Image from a Private Registry
 ](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/). If you create the secret for private registry access in the source kubernetes cluster and also attach to all the container specifications in all resources, kubernetes migration factory will migrate that as well
 * KMF tool also helps to migrate images from 3rd party repositories such as GCR, Dockerhub, Gitlab private registry to Amazon Elastic Container Registry. On the workstation where the KMF CLI will be used, ensure to setup docker login for Amazon ECR and also add docker login to list of supported repositories (GCR, Gitlab, MCR, Dockerhub) that are intended for migration prior to executing KMF
@@ -128,7 +128,7 @@ ACTION=Delete
 NAMESPACES=all
 
 [SOURCE]
-# Source Cloud Provider valid values are GKE,AKE,KOPS
+# Source Cloud Provider valid values are GKE,AKS,KOPS
 CLOUD=GKE
 # Source kube config file
 # Refer the documentation for the respective source cluster provider to create the kubeconfig file. For GKE, you may refer https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl
@@ -176,7 +176,7 @@ you can also provide comma separated values of namespaces, for example if the na
 
 ### **SOURCE Section** 
 ***CLOUD*** (Required): Cloud provider for the source Kubernetes cluster
-Valid values: any one of GKE, AKE, KOPS
+Valid values: any one of GKE, AKS, KOPS
 
 ***KUBE_CONFIG*** (Required): Kubeconfig file path on the local machine for the destination cluster
 

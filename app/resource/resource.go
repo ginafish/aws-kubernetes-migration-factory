@@ -25,7 +25,7 @@ import (
 	autoscaling "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
-	podsecuritypolicy "k8s.io/api/policy/v1beta1"
+	// podsecuritypolicy "k8s.io/api/policy/v1beta1"
 	rbac "k8s.io/api/rbac/v1"
 	storage "k8s.io/api/storage/v1"
 
@@ -50,7 +50,7 @@ type Resources struct {
 	ClusterRoleList                    []rbac.ClusterRole
 	ClusterRoleBindingList             []rbac.ClusterRoleBinding
 	HpaList                            []autoscaling.HorizontalPodAutoscaler
-	PspList                            []podsecuritypolicy.PodSecurityPolicy
+	// PspList                            []podsecuritypolicy.PodSecurityPolicy
 	SvcAccList                         []v1.ServiceAccount
 	CronJobList                        []batchv1beta1.CronJob
 	JobList                            []batchv1.Job
