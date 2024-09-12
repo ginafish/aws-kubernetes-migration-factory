@@ -279,14 +279,14 @@ func Resource_trim_fields(resource_type string, resource *resource.Resources, re
 		resource.HpaList = resource_list
 	}
 
-	if resource_type == "PodSecurityPolicy" && itemExists([]string{"podsecuritypolicies", "podsecuritypolicy", "psp", "all"}, resToInclude) {
-		var resource_list []podsecuritypolicy.PodSecurityPolicy
-		for _, item := range resource.PspList {
-			Trim_Item_All(&item.ObjectMeta, false)
-			resource_list = append(resource_list, item)
-		}
-		resource.PspList = resource_list
-	}
+	// if resource_type == "PodSecurityPolicy" && itemExists([]string{"podsecuritypolicies", "podsecuritypolicy", "psp", "all"}, resToInclude) {
+	// 	var resource_list []podsecuritypolicy.PodSecurityPolicy
+	// 	for _, item := range resource.PspList {
+	// 		Trim_Item_All(&item.ObjectMeta, false)
+	// 		resource_list = append(resource_list, item)
+	// 	}
+	// 	resource.PspList = resource_list
+	// }
 
 	if resource_type == "ServiceAccount" && itemExists([]string{"serviceaccount", "serviceaccounts", "sa", "all"}, resToInclude) {
 		var resource_list []v1.ServiceAccount
@@ -581,7 +581,7 @@ func Generate_psp_config(src *cluster.Cluster, resource *resource.Resources) {
 		}
 
 		// append list of pod security policies to glabal services list
-		resource.PspList = append(resource.PspList, psp.Items...)
+		// resource.PspList = append(resource.PspList, psp.Items...)
 	}
 }
 

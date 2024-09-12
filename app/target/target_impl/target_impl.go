@@ -393,16 +393,16 @@ func Deploy_resource_eks(dst *cluster.Cluster, src_resources *resource.Resources
 		if stringInSlice("podsecuritypolicies", dst.Resources) || stringInSlice("podsecuritypolicy", dst.Resources) || stringInSlice("psp", dst.Resources) || stringInSlice("all", dst.Resources) {
 			fmt.Println("===============")
 			fmt.Println("Creating Pod security policies")
-			for _, psp := range src_resources.PspList {
-				psp := psp
-				if psp.ObjectMeta.Namespace == element.ObjectMeta.Name {
-					fmt.Println("Creating Pod Security Policies: ", psp.ObjectMeta.Name)
-					_, err := dst.Clientset.PolicyV1beta1().PodSecurityPolicies().Create(context.TODO(), &psp, metav1.CreateOptions{})
-					if err != nil {
-						fmt.Println(err)
-					}
-				}
-			}
+			// for _, psp := range src_resources.PspList {
+			// 	psp := psp
+			// 	if psp.ObjectMeta.Namespace == element.ObjectMeta.Name {
+			// 		fmt.Println("Creating Pod Security Policies: ", psp.ObjectMeta.Name)
+			// 		_, err := dst.Clientset.PolicyV1beta1().PodSecurityPolicies().Create(context.TODO(), &psp, metav1.CreateOptions{})
+			// 		if err != nil {
+			// 			fmt.Println(err)
+			// 		}
+			// 	}
+			// }
 		}
 
 		// Create Service Account resource
@@ -597,16 +597,16 @@ func Delete_resource_eks(dst *cluster.Cluster, src_resources *resource.Resources
 		// Delete psp resources
 		fmt.Println("===============")
 		fmt.Println("Deleting Pod Security Policies")
-		for _, psp := range src_resources.PspList {
-			psp := psp
-			if psp.ObjectMeta.Namespace == element.ObjectMeta.Name {
-				fmt.Println("Deleting PodSecurityPolicy: ", psp.ObjectMeta.Name)
-				err := dst.Clientset.PolicyV1beta1().PodSecurityPolicies().Delete(context.TODO(), psp.ObjectMeta.Name, metav1.DeleteOptions{})
-				if err != nil {
-					fmt.Println(err)
-				}
-			}
-		}
+		// for _, psp := range src_resources.PspList {
+		// 	psp := psp
+		// 	if psp.ObjectMeta.Namespace == element.ObjectMeta.Name {
+		// 		fmt.Println("Deleting PodSecurityPolicy: ", psp.ObjectMeta.Name)
+		// 		err := dst.Clientset.PolicyV1beta1().PodSecurityPolicies().Delete(context.TODO(), psp.ObjectMeta.Name, metav1.DeleteOptions{})
+		// 		if err != nil {
+		// 			fmt.Println(err)
+		// 		}
+		// 	}
+		// }
 
 		// Delete roles resource
 		fmt.Println("===============")

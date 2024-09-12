@@ -77,7 +77,7 @@ func (g GKE) GetSourceDetails(sCluster *cluster.Cluster) resource.Resources {
 		fmt.Println("......ClusterRoleList......", resources.ClusterRoleList)
 		fmt.Println("......ClusterRoleBindingList......", resources.ClusterRoleBindingList)
 		fmt.Println("......HpaList......", resources.HpaList)
-		fmt.Println("......PspList......", resources.PspList)
+		// fmt.Println("......PspList......", resources.PspList)
 		fmt.Println("......SvcAccList......", resources.SvcAccList)
 		fmt.Println("......CronJobList......", resources.CronJobList)
 		fmt.Println("......PersistentVolumeClaimsList......", resources.PersistentVolumeClaimsList)
